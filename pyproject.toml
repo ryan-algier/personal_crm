@@ -1,0 +1,17 @@
+[project]
+name = "personal-crm"
+version = "0.1.0"
+description = "Personal CRM for networking management"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "matplotlib>=3.10.6",
+    "numpy>=2.3.2",
+    "polars>=1.33.0",
+]
+
+[tool.uv]
+dev-dependencies = [
+    "ruff>=0.7.0",
+    
+]
