@@ -9,4 +9,9 @@ wheels/
 # Virtual environments
 .venv
 
+#changelog file
 changelog.md
+
+#real data
+*crm_real_data.xlsx
+*real*
