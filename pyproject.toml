@@ -5,8 +5,13 @@ description = "Personal CRM for networking management"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
+    "datetime>=6.0",
+    "faker>=40.18.0",
     "matplotlib>=3.10.6",
     "numpy>=2.3.2",
+    "openpyxl>=3.1.5",
+    "path>=17.1.1",
+    "pathlib>=1.0.1",
     "polars>=1.33.0",
 ]
 
