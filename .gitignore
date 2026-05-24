@@ -9,6 +9,9 @@ wheels/
 # Virtual environments
 .venv
 
+# environment level data
+.env
+
 #changelog file
 changelog.md
 
