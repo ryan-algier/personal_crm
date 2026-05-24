@@ -5,7 +5,7 @@ Reads crm_template.xlsx and produces crm_sample.xlsx with all
 personally identifiable information replaced by Faker-generated values.
 
 Sensitive fields replaced:
-  Contacts  : first_name, last_name, email, phone, linkedin_url, notes
+  Contacts  : first_name, last_name, email, phone, linkedin_url, location, notes
   Companies : name, website, notes  (industry/size/status kept)
   Interactions: summary, outcome
   Referrals : notes
@@ -90,7 +90,7 @@ def build_contact_map(contacts_sheet) -> dict:
             "first_name": first,
             "last_name": last,
             "email": fake.email(),
-            "phone": fake.phone_number(),
+            "phone": fake.numerify('##########'),
             "linkedin_url": f"https://linkedin.com/in/{first.lower()}-{last.lower()}-{fake.bothify('####')}",
         }
 
@@ -123,9 +123,9 @@ def anonymize_companies(ws, company_map: dict):
 
 
 def anonymize_contacts(ws, contact_map: dict):
-    """Replace first_name, last_name, email, phone, linkedin_url, notes in Contacts sheet."""
+    """Replace first_name, last_name, email, phone, linkedin_url, location, notes in Contacts sheet."""
     headers = [cell.value for cell in next(ws.iter_rows(min_row=1, max_row=1))]
-    how_we_met = ['Family', 'Friend', 'Referral', 'Coworker', 'Job Fair', 'LinkedIn']
+    how_we_met = ['LinkedIn', 'college', 'life', 'referral', 'cold outreach', 'other']
 
     col = {name: idx + 1 for idx, name in enumerate(headers)}
 
@@ -146,6 +146,8 @@ def anonymize_contacts(ws, contact_map: dict):
             ws.cell(row=row_idx, column=col["phone"]).value = fake_contact.get("phone", fake.numerify('##########'))
         if "linkedin_url" in col:
             ws.cell(row=row_idx, column=col["linkedin_url"]).value = fake_contact.get("linkedin_url", "")
+        if "location" in col:
+            ws.cell(row=row_idx, column=col["location"]).value = fake_contact.get("location", fake.city())
         if "how_we_met" in col:
             ws.cell(row=row_idx, column=col["how_we_met"]).value = fake.random_element(how_we_met)
         if "notes" in col:
@@ -155,7 +157,7 @@ def anonymize_contacts(ws, contact_map: dict):
 def anonymize_interactions(ws):
     """Replace summary and outcome in Interactions sheet."""
     headers = [cell.value for cell in next(ws.iter_rows(min_row=1, max_row=1))]
-    interaction_type = ['email', 'call', 'coffee chat', 'thank you', 'other']
+    interaction_type = ['email','call','in person', 'LinkedIn', 'thank you', 'other']
     col = {name: idx + 1 for idx, name in enumerate(headers)}
 
     for row_idx in range(2, ws.max_row + 1):
