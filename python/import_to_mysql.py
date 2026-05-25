@@ -264,11 +264,14 @@ def main():
     print("  Connected")
 
     try:
-        
+
         print("Clearing existing data...")
         cursor.execute("SET FOREIGN_KEY_CHECKS = 0;")
-        cursor.execute("TRUNCATE TABLE referrals; TRUNCATE TABLE interactions; TRUNCATE TABLE contacts; TRUNCATE TABLE companies;")
-        cursor.execute("SET FOREIGN_KEY_CHECKS = 1;")
+        cursor.execute("TRUNCATE TABLE referrals")
+        cursor.execute("TRUNCATE TABLE interactions")
+        cursor.execute("TRUNCATE TABLE contacts")
+        cursor.execute("TRUNCATE TABLE companies")
+        cursor.execute("SET FOREIGN_KEY_CHECKS = 1")
 
         print("\nInserting companies...")
         company_id_map = import_companies(cursor, companies_rows)
