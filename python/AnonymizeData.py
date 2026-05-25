@@ -126,6 +126,7 @@ def anonymize_contacts(ws, contact_map: dict):
     """Replace first_name, last_name, email, phone, linkedin_url, location, notes in Contacts sheet."""
     headers = [cell.value for cell in next(ws.iter_rows(min_row=1, max_row=1))]
     how_we_met = ['LinkedIn', 'college', 'life', 'referral', 'cold outreach', 'other']
+    locations = ['Chicago', 'New York City', 'Washington D.C.', 'Los Angeles', 'Houston']
 
     col = {name: idx + 1 for idx, name in enumerate(headers)}
 
@@ -147,7 +148,7 @@ def anonymize_contacts(ws, contact_map: dict):
         if "linkedin_url" in col:
             ws.cell(row=row_idx, column=col["linkedin_url"]).value = fake_contact.get("linkedin_url", "")
         if "location" in col:
-            ws.cell(row=row_idx, column=col["location"]).value = fake_contact.get("location", fake.city())
+            ws.cell(row=row_idx, column=col["location"]).value = fake.random_element(locations)
         if "how_we_met" in col:
             ws.cell(row=row_idx, column=col["how_we_met"]).value = fake.random_element(how_we_met)
         if "notes" in col:
