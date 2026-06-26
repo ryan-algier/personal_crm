@@ -158,7 +158,7 @@ def anonymize_contacts(ws, contact_map: dict):
 def anonymize_interactions(ws):
     """Replace summary and outcome in Interactions sheet."""
     headers = [cell.value for cell in next(ws.iter_rows(min_row=1, max_row=1))]
-    interaction_type = ['email','call','in person', 'LinkedIn', 'thank you', 'other']
+    interaction_type = ['email','call','in person', 'LinkedIn', 'other']
     col = {name: idx + 1 for idx, name in enumerate(headers)}
 
     for row_idx in range(2, ws.max_row + 1):
@@ -170,7 +170,9 @@ def anonymize_interactions(ws):
         if "date" in col:
             ws.cell(row=row_idx, column=col["date"]).value = fake.date_between(start_date=date(2025, 1, 1), end_date=date(2026, 12, 31))
         if "type" in col:
-            ws.cell(row=row_idx, column=col["type"]).value = fake.random_element(interaction_type)
+            current_type = ws.cell(row=row_idx, column=col["type"]).value
+            if current_type and current_type.lower() != "thank you":
+                ws.cell(row=row_idx, column=col["type"]).value = fake.random_element(interaction_type)
         if "outcome" in col:
             ws.cell(row=row_idx, column=col["outcome"]).value = fake.sentence() if ws.cell(row=row_idx, column=col["outcome"]).value else None
 
