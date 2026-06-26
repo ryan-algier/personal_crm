@@ -14,9 +14,9 @@ Insert order:
 Folder structure expected:
     project/
     ├── anonymized_data/
-    │   └── crm_sample.xlsx        ← anonymized data for testing
-    ├── input/
-    │   └── crm_template.xlsx      ← real data (personal use only)
+    │   └── crm_anonymized_data.xlsx        ← anonymized data for testing
+    ├── real_data/
+    │   └── crm_real_data.xlsx      ← real data (personal use only)
     └── python/
         └── import_to_mysql.py     ← this script
 
@@ -35,11 +35,22 @@ import mysql.connector
 from openpyxl import load_workbook
 from datetime import datetime, date
 from dotenv import load_dotenv
+import sys
 
 # ── Paths ────────────────────────────────────────────────────────────────────
 
 SCRIPT_DIR = Path(__file__).parent
-INPUT_FILE = SCRIPT_DIR.parent / "anonymized_data" / "crm_anonymized_data.xlsx"
+
+# Pass 'sample' as a command line argument to load anonymized data
+# Default loads real data
+mode = sys.argv[1] if len(sys.argv) > 1 else "real"
+
+if mode == "real":
+    INPUT_FILE = SCRIPT_DIR.parent / "real_data" / "crm_real_data.xlsx"
+else:
+    INPUT_FILE = SCRIPT_DIR.parent / "anonymized_data" / "crm_anonymized_data.xlsx"
+
+load_dotenv(SCRIPT_DIR.parent / ".env")
 
 # ── Database config ───────────────────────────────────────────────────────────
 # Credentials are loaded from a .env file at the project root.
@@ -49,16 +60,18 @@ INPUT_FILE = SCRIPT_DIR.parent / "anonymized_data" / "crm_anonymized_data.xlsx"
 #   DB_HOST=localhost
 #   DB_USER=root
 #   DB_PASSWORD=your_password_here
-#   DB_NAME=networking_crm
-
-load_dotenv(SCRIPT_DIR.parent / ".env")
+#   DB_NAME_REAL=networking_crm
+#   DB_NAME_SAMPLE=networking_crm_sample
 
 DB_CONFIG = {
     "host":     os.getenv("DB_HOST", "localhost"),
     "user":     os.getenv("DB_USER", "root"),
     "password": os.getenv("DB_PASSWORD", ""),
-    "database": os.getenv("DB_NAME", "networking_crm"),
+    "database": os.getenv("DB_NAME_REAL") if mode == "real" else os.getenv("DB_NAME_SAMPLE"),
 }
+
+
+print(f"Mode: {mode.upper()} — loading from {INPUT_FILE.name} into {DB_CONFIG['database']}")
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -177,8 +190,8 @@ def import_contacts(cursor, rows: list[dict], company_id_map: dict) -> dict:
 def import_interactions(cursor, rows: list[dict], contact_id_map: dict):
     """Insert interactions, translating temp contact IDs to real MySQL IDs."""
     sql = """
-        INSERT INTO interactions (contact_id, date, type, summary, outcome)
-        VALUES (%s, %s, %s, %s, %s)
+        INSERT INTO interactions (contact_id, date, type, summary, outcome, thank_you_required)
+        VALUES (%s, %s, %s, %s, %s, %s)
     """
     count = 0
     for row in rows:
@@ -197,6 +210,7 @@ def import_interactions(cursor, rows: list[dict], contact_id_map: dict):
             clean_str(row.get("type")),
             clean_str(row.get("summary")),
             clean_str(row.get("outcome")),
+            1 if str(row.get("thank_you_required", "TRUE")).upper() == "TRUE" else 0,
         )
         cursor.execute(sql, values)
         count += 1
