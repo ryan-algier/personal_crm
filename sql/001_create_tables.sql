@@ -10,8 +10,8 @@
 --   3. Open this file and run it (lightning bolt icon or Ctrl+Shift+Enter)
 -- ============================================================
 
-CREATE DATABASE IF NOT EXISTS networking_crm;
-USE networking_crm;
+CREATE DATABASE IF NOT EXISTS networking_crm_sample;
+USE networking_crm_sample;
 
 -- ------------------------------------------------------------
 -- Companies
