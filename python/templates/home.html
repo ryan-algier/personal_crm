@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}Home — Networking CRM{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col">
+        <h2 class="fw-bold">Dashboard</h2>
+        <p class="text-muted">Your networking at a glance</p>
+    </div>
+    <div class="col-auto d-flex align-items-center gap-2">
+        <a href="{{ url_for('add_contact') }}" class="btn btn-primary">
+            <i class="bi bi-person-plus"></i> Add Contact
+        </a>
+        <a href="{{ url_for('add_interaction') }}" class="btn btn-outline-primary">
+            <i class="bi bi-chat-plus"></i> Log Interaction
+        </a>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-sm-6 col-lg-3">
+        <div class="card p-4 text-center">
+            <div class="display-4 fw-bold text-primary">{{ contact_count }}</div>
+            <div class="text-muted mt-1"><i class="bi bi-people"></i> Contacts</div>
+            <a href="{{ url_for('contacts') }}" class="stretched-link"></a>
+        </div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+        <div class="card p-4 text-center">
+            <div class="display-4 fw-bold text-success">{{ company_count }}</div>
+            <div class="text-muted mt-1"><i class="bi bi-building"></i> Companies</div>
+            <a href="{{ url_for('companies') }}" class="stretched-link"></a>
+        </div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+        <div class="card p-4 text-center">
+            <div class="display-4 fw-bold text-info">{{ interaction_count }}</div>
+            <div class="text-muted mt-1"><i class="bi bi-chat-dots"></i> Interactions</div>
+            <a href="{{ url_for('interactions') }}" class="stretched-link"></a>
+        </div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+        <div class="card p-4 text-center">
+            <div class="display-4 fw-bold text-warning">{{ referral_count }}</div>
+            <div class="text-muted mt-1"><i class="bi bi-diagram-2"></i> Referrals</div>
+        </div>
+    </div>
+</div>
+{% endblock %}

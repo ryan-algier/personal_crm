@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% block title %}Log Interaction — Networking CRM{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col">
+        <h2 class="fw-bold">Log Interaction</h2>
+    </div>
+    <div class="col-auto">
+        <a href="{{ url_for('interactions') }}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Back
+        </a>
+    </div>
+</div>
+
+<div class="card p-4">
+    <form method="POST">
+        <div class="row g-3 mb-4">
+            <div class="col-md-6">
+                <label class="form-label">Contact <span class="text-danger">*</span></label>
+                <select name="contact_id" class="form-select" required>
+                    <option value="">— Select contact —</option>
+                    {% for contact in all_contacts %}
+                        <option value="{{ contact.id }}" {% if request.form.get('contact_id') == contact.id|string %}selected{% endif %}>
+                            {{ contact.first_name }} {{ contact.last_name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Type</label>
+                <select name="type" class="form-select">
+                    <option value="">— Select type —</option>
+                    {% for option in interaction_type_options %}
+                        <option value="{{ option }}" {% if request.form.get('type') == option %}selected{% endif %}>
+                            {{ option }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Date</label>
+                <input type="date" name="date" class="form-control" value="{{ request.form.get('date', today) }}">
+            </div>
+            <div class="col-md-6 d-flex align-items-end">
+                <div class="form-check mb-2">
+                    <input class="form-check-input" type="checkbox" name="thank_you_required" id="thank_you_required"
+                           {% if request.form.get('thank_you_required', 'on') == 'on' %}checked{% endif %}>
+                    <label class="form-check-label" for="thank_you_required">
+                        Thank You Required
+                    </label>
+                </div>
+            </div>
+            <div class="col-12">
+                <label class="form-label">Summary</label>
+                <textarea name="summary" class="form-control" rows="3" placeholder="What did you discuss?">{{ request.form.get('summary', '') }}</textarea>
+            </div>
+            <div class="col-12">
+                <label class="form-label">Outcome</label>
+                <textarea name="outcome" class="form-control" rows="2" placeholder="Next steps, follow-ups...">{{ request.form.get('outcome', '') }}</textarea>
+            </div>
+        </div>
+
+        <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-primary">
+                <i class="bi bi-chat-plus"></i> Log Interaction
+            </button>
+            <a href="{{ url_for('interactions') }}" class="btn btn-outline-secondary">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

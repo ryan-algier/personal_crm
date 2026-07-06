@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% block title %}Interactions — Networking CRM{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col">
+        <h2 class="fw-bold">Interactions</h2>
+        <p class="text-muted">{{ interactions|length }} total</p>
+    </div>
+    <div class="col-auto d-flex align-items-center">
+        <a href="{{ url_for('add_interaction') }}" class="btn btn-primary">
+            <i class="bi bi-chat-plus"></i> Log Interaction
+        </a>
+    </div>
+</div>
+
+<div class="card">
+    <div class="table-responsive">
+        <table class="table table-hover mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>Date</th>
+                    <th>Contact</th>
+                    <th>Type</th>
+                    <th>Summary</th>
+                    <th>Outcome</th>
+                    <th>Thank You Required</th>
+                    <th>Thank You Sent</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for interaction in interactions %}
+                <tr>
+                    <td>{{ interaction.date.strftime('%b %d, %Y') if interaction.date else '—' }}</td>
+                    <td class="fw-semibold">{{ interaction.contact_name }}</td>
+                    <td><span class="badge bg-secondary">{{ interaction.type or '—' }}</span></td>
+                    <td class="text-muted small">{{ interaction.summary or '—' }}</td>
+                    <td class="text-muted small">{{ interaction.outcome or '—' }}</td>
+                    <td>
+                        {% if interaction.thank_you_required %}
+                            <span class="badge bg-warning text-dark">Yes</span>
+                        {% else %}
+                            <span class="badge bg-light text-muted">No</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if interaction.thank_you_status == 'not_required' %}
+                            <span class="badge bg-light text-muted">N/A</span>
+                        {% elif interaction.thank_you_status == 'is_thank_you' %}
+                            <span class="badge bg-light text-muted">—</span>
+                        {% elif interaction.thank_you_status == 'sent' %}
+                            <span class="badge bg-success">Sent</span>
+                        {% elif interaction.thank_you_status == 'missing' %}
+                            <span class="badge bg-danger">Missing</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-end">
+                        <a href="{{ url_for('edit_interaction', interaction_id=interaction.id) }}" class="btn btn-outline-secondary btn-action">
+                            <i class="bi bi-pencil"></i>
+                        </a>
+                        <form method="POST" action="{{ url_for('delete_interaction', interaction_id=interaction.id) }}" class="d-inline"
+                              onsubmit="return confirm('Delete this interaction?')">
+                            <button type="submit" class="btn btn-outline-danger btn-action">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="7" class="text-center text-muted py-4">No interactions yet. <a href="{{ url_for('add_interaction') }}">Log one</a></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

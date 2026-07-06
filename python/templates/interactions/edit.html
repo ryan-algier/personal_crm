@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% block title %}Edit Interaction — Networking CRM{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col">
+        <h2 class="fw-bold">Edit Interaction</h2>
+    </div>
+    <div class="col-auto">
+        <a href="{{ url_for('interactions') }}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Back
+        </a>
+    </div>
+</div>
+
+<div class="card p-4">
+    <form method="POST">
+        <div class="row g-3 mb-4">
+            <div class="col-md-6">
+                <label class="form-label">Contact <span class="text-danger">*</span></label>
+                <select name="contact_id" class="form-select" required>
+                    <option value="">— Select contact —</option>
+                    {% for contact in all_contacts %}
+                        <option value="{{ contact.id }}"
+                            {% if request.form.get('contact_id', interaction.contact_id|string) == contact.id|string %}selected{% endif %}>
+                            {{ contact.first_name }} {{ contact.last_name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Type</label>
+                <select name="type" class="form-select">
+                    <option value="">— Select type —</option>
+                    {% for option in interaction_type_options %}
+                        <option value="{{ option }}"
+                            {% if request.form.get('type', interaction.type) == option %}selected{% endif %}>
+                            {{ option }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Date</label>
+                <input type="date" name="date" class="form-control"
+                       value="{{ request.form.get('date', interaction.date.isoformat() if interaction.date else '') }}">
+            </div>
+            <div class="col-md-6 d-flex align-items-end">
+                <div class="form-check mb-2">
+                    <input class="form-check-input" type="checkbox" name="thank_you_required" id="thank_you_required"
+                           {% if request.form.get('thank_you_required') or (request.method == 'GET' and interaction.thank_you_required) %}checked{% endif %}>
+                    <label class="form-check-label" for="thank_you_required">
+                        Thank You Required
+                    </label>
+                </div>
+            </div>
+            <div class="col-12">
+                <label class="form-label">Summary</label>
+                <textarea name="summary" class="form-control" rows="3">{{ request.form.get('summary', interaction.summary or '') }}</textarea>
+            </div>
+            <div class="col-12">
+                <label class="form-label">Outcome</label>
+                <textarea name="outcome" class="form-control" rows="2">{{ request.form.get('outcome', interaction.outcome or '') }}</textarea>
+            </div>
+        </div>
+
+        <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-primary">
+                <i class="bi bi-check-lg"></i> Save Changes
+            </button>
+            <a href="{{ url_for('interactions') }}" class="btn btn-outline-secondary">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

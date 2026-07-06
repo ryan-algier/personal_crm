@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+{% block title %}Edit Contact — Networking CRM{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col">
+        <h2 class="fw-bold">Edit Contact</h2>
+        <p class="text-muted">{{ contact.first_name }} {{ contact.last_name }}</p>
+    </div>
+    <div class="col-auto">
+        <a href="{{ url_for('contacts') }}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Back
+        </a>
+    </div>
+</div>
+
+<div class="card p-4">
+    <form method="POST">
+
+        <h5 class="mb-3 text-muted">Basic Info</h5>
+        <div class="row g-3 mb-4">
+            <div class="col-md-6">
+                <label class="form-label">First Name <span class="text-danger">*</span></label>
+                <input type="text" name="first_name" class="form-control" required
+                       value="{{ request.form.get('first_name', contact.first_name) }}">
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Last Name <span class="text-danger">*</span></label>
+                <input type="text" name="last_name" class="form-control" required
+                       value="{{ request.form.get('last_name', contact.last_name) }}">
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Email</label>
+                <input type="email" name="email" class="form-control"
+                       value="{{ request.form.get('email', contact.email or '') }}">
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Phone</label>
+                <input type="text" name="phone" class="form-control"
+                       value="{{ request.form.get('phone', contact.phone or '') }}">
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">LinkedIn URL</label>
+                <input type="url" name="linkedin_url" class="form-control"
+                       value="{{ request.form.get('linkedin_url', contact.linkedin_url or '') }}">
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Location</label>
+                <input type="text" name="location" class="form-control"
+                       value="{{ request.form.get('location', contact.location or '') }}">
+            </div>
+        </div>
+
+        <h5 class="mb-3 text-muted">Connection Details</h5>
+        <div class="row g-3 mb-4">
+            <div class="col-md-6">
+                <label class="form-label">Company</label>
+                <select name="company_id" class="form-select">
+                    <option value="">— No company —</option>
+                    {% for company in companies %}
+                        <option value="{{ company.id }}"
+                            {% if request.form.get('company_id', contact.company_id|string) == company.id|string %}selected{% endif %}>
+                            {{ company.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">How We Met</label>
+                <select name="how_we_met" class="form-select">
+                    <option value="">— Select —</option>
+                    {% for option in how_we_met_options %}
+                        <option value="{{ option }}"
+                            {% if request.form.get('how_we_met', contact.how_we_met) == option %}selected{% endif %}>
+                            {{ option }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Met On</label>
+                <input type="date" name="met_on" class="form-control"
+                       value="{{ request.form.get('met_on', contact.met_on.isoformat() if contact.met_on else '') }}">
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Referred By</label>
+                <select name="referrer_id" class="form-select">
+                    <option value="">— Not referred —</option>
+                    {% for c in all_contacts %}
+                        <option value="{{ c.id }}"
+                            {% if request.form.get('referrer_id', current_referrer_id|string) == c.id|string %}selected{% endif %}>
+                            {{ c.first_name }} {{ c.last_name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+
+        <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-primary">
+                <i class="bi bi-check-lg"></i> Save Changes
+            </button>
+            <a href="{{ url_for('contacts') }}" class="btn btn-outline-secondary">Cancel</a>
+        </div>
+
+    </form>
+</div>
+{% endblock %}

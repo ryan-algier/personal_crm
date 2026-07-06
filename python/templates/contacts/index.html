@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block title %}Contacts — Networking CRM{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col">
+        <h2 class="fw-bold">Contacts</h2>
+        <p class="text-muted">{{ contacts|length }} total</p>
+    </div>
+    <div class="col-auto d-flex align-items-center">
+        <a href="{{ url_for('add_contact') }}" class="btn btn-primary">
+            <i class="bi bi-person-plus"></i> Add Contact
+        </a>
+    </div>
+</div>
+
+<div class="card">
+    <div class="table-responsive">
+        <table class="table table-hover mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>Name</th>
+                    <th>Company</th>
+                    <th>Location</th>
+                    <th>How We Met</th>
+                    <th>Met On</th>
+                    <th>Referred By</th>
+                    <th>Email</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for contact in contacts %}
+                <tr>
+                    <td class="fw-semibold">{{ contact.first_name }} {{ contact.last_name }}</td>
+                    <td>{{ contact.company_name or '—' }}</td>
+                    <td>{{ contact.location or '—' }}</td>
+                    <td>{{ contact.how_we_met or '—' }}</td>
+                    <td>{{ contact.met_on.strftime('%b %d, %Y') if contact.met_on else '—' }}</td>
+                    <td>{{ contact.referred_by or '—' }}</td>
+                    <td>
+                        {% if contact.email %}
+                            <a href="mailto:{{ contact.email }}">{{ contact.email }}</a>
+                        {% else %}—{% endif %}
+                    </td>
+                    <td class="text-end">
+                        <a href="{{ url_for('edit_contact', contact_id=contact.id) }}" class="btn btn-outline-secondary btn-action">
+                            <i class="bi bi-pencil"></i>
+                        </a>
+                        <form method="POST" action="{{ url_for('delete_contact', contact_id=contact.id) }}" class="d-inline"
+                              onsubmit="return confirm('Delete {{ contact.first_name }} {{ contact.last_name }}? This will also delete their interactions.')">
+                            <button type="submit" class="btn btn-outline-danger btn-action">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="8" class="text-center text-muted py-4">No contacts yet. <a href="{{ url_for('add_contact') }}">Add one</a></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
