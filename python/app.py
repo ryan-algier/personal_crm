@@ -6,26 +6,30 @@ Run with: uv run flask --app app run
 
 Routes:
     /                       Home — summary counts
+
     /contacts               List all contacts
     /contacts/add           Add a new contact
     /contacts/<id>/edit     Edit a contact
     /contacts/<id>/delete   Delete a contact
+
     /companies              List all companies
     /companies/add          Add a new company
     /companies/<id>/edit    Edit a company
     /companies/<id>/delete  Delete a company
+
     /interactions           List all interactions
     /interactions/add       Add a new interaction
     /interactions/<id>/edit     Edit an interaction
     /interactions/<id>/delete   Delete an interaction
 """
-
+import os
 from flask import Flask, render_template, request, redirect, url_for, flash
 from db import get_db, close_db
 from datetime import date
 
 app = Flask(__name__)
-app.secret_key = "crm-dev-secret-key"  # required for flash messages
+## to generate a key, use: python -c "import secrets; print(secrets.token_hex(32))"
+app.secret_key = os.getenv("SECRET_KEY")  # required for flash messages
 
 # ── Dropdown options ──────────────────────────────────────────────────────────
 

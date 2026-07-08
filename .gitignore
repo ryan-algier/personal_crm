@@ -12,8 +12,11 @@ wheels/
 # environment level data
 .env
 
-#changelog file
+# changelog file
 changelog.md
 
-#real data
+# real data
 *crm_real_data.xlsx
+
+# Database backups
+backups/
