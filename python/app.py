@@ -407,7 +407,7 @@ def add_interaction():
 
     if request.method == "POST":
         contact_id = request.form.get("contact_id") or None
-        date = request.form.get("date") or None
+        interaction_date = request.form.get("date") or None
         type_ = request.form.get("type") or None
         summary = request.form.get("summary", "").strip() or None
         outcome = request.form.get("outcome", "").strip() or None
@@ -420,7 +420,7 @@ def add_interaction():
                 cursor.execute("""
                     INSERT INTO interactions (contact_id, date, type, summary, outcome, thank_you_required)
                     VALUES (%s, %s, %s, %s, %s, %s)
-                """, (contact_id, date, type_, summary, outcome, thank_you_required))
+                """, (contact_id, interaction_date, type_, summary, outcome, thank_you_required))
                 conn.commit()
                 flash("Interaction added successfully.", "success")
                 close_db(conn, cursor)
@@ -453,7 +453,7 @@ def edit_interaction(interaction_id):
 
     if request.method == "POST":
         contact_id = request.form.get("contact_id") or None
-        date = request.form.get("date") or None
+        interaction_date = request.form.get("date") or None
         type_ = request.form.get("type") or None
         summary = request.form.get("summary", "").strip() or None
         outcome = request.form.get("outcome", "").strip() or None
@@ -468,7 +468,7 @@ def edit_interaction(interaction_id):
                         contact_id = %s, date = %s, type = %s,
                         summary = %s, outcome = %s, thank_you_required = %s
                     WHERE id = %s
-                """, (contact_id, date, type_, summary, outcome, thank_you_required, interaction_id))
+                """, (contact_id, interaction_date, type_, summary, outcome, thank_you_required, interaction_id))
                 conn.commit()
                 flash("Interaction updated successfully.", "success")
                 close_db(conn, cursor)
