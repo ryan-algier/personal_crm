@@ -28,7 +28,7 @@ from datetime import date
 
 Faker.seed(1228673)
 
-INPUT_PATH = Path("real_data")
+INPUT_PATH = Path("excel")
 INPUT_FILE = INPUT_PATH / "crm_real_data.xlsx"
 
 OUTPUT_PATH = Path('anonymized_data/')

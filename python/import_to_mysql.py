@@ -3,7 +3,7 @@ import_to_mysql.py
 
 Reads crm_sample.xlsx (or crm_template.xlsx for real data) from the
 'anonymized_data' folder one level above this script and loads it into
-the networking_crm MySQL database.
+the personal_crm MySQL database.
 
 Handles the temp ID → real MySQL ID mapping automatically so foreign
 key relationships are preserved correctly.
@@ -15,7 +15,7 @@ Folder structure expected:
     project/
     ├── anonymized_data/
     │   └── crm_anonymized_data.xlsx        ← anonymized data for testing
-    ├── real_data/
+    ├── excel/
     │   └── crm_real_data.xlsx      ← real data (personal use only)
     └── python/
         └── import_to_mysql.py     ← this script
@@ -41,12 +41,13 @@ import sys
 
 SCRIPT_DIR = Path(__file__).parent
 
-# Pass 'sample' as a command line argument to load anonymized data
-# Default loads real data
-mode = sys.argv[1] if len(sys.argv) > 1 else "real"
+
+# Load .env from project root (one level above /python)
+load_dotenv(Path(__file__).parent.parent / ".env")
+mode = os.getenv("DB_MODE", "real")
 
 if mode == "real":
-    INPUT_FILE = SCRIPT_DIR.parent / "real_data" / "crm_real_data.xlsx"
+    INPUT_FILE = SCRIPT_DIR.parent / "excel" / "crm_real_data.xlsx"
 else:
     INPUT_FILE = SCRIPT_DIR.parent / "anonymized_data" / "crm_anonymized_data.xlsx"
 
@@ -55,13 +56,6 @@ load_dotenv(SCRIPT_DIR.parent / ".env")
 # ── Database config ───────────────────────────────────────────────────────────
 # Credentials are loaded from a .env file at the project root.
 # Never hardcode passwords here — the .env file must be in .gitignore.
-#
-# .env file should contain:
-#   DB_HOST=localhost
-#   DB_USER=root
-#   DB_PASSWORD=your_password_here
-#   DB_NAME_REAL=networking_crm
-#   DB_NAME_SAMPLE=networking_crm_sample
 
 DB_CONFIG = {
     "host":     os.getenv("DB_HOST", "localhost"),
