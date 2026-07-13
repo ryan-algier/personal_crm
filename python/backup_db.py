@@ -1,7 +1,7 @@
 """
 backup_db.py
 
-Creates a timestamped MySQL dump of the networking_crm database and saves
+Creates a timestamped MySQL dump of the personal_crm database and saves
 it to a 'backups' folder one level above this script.
 
 Backups are kept forever — all files are retained.
@@ -9,8 +9,8 @@ Backups are kept forever — all files are retained.
 Folder structure:
     project/
     ├── backups/
-    │   ├── networking_crm_2024_01_15_09_00.sql
-    │   ├── networking_crm_2024_01_16_09_00.sql
+    │   ├── personal_crm_2024_01_15_09_00.sql
+    │   ├── personal_crm_2024_01_16_09_00.sql
     │   └── ...
     └── python/
         └── backup_db.py       ← this script
