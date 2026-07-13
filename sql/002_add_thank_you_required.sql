@@ -6,7 +6,7 @@
 --   2. Connect to your local MySQL instance
 --   3. Open this file and run it (lightning bolt icon or Ctrl+Shift+Enter)
 -- ============================================================
-USE networking_crm_sample;
+USE personal_crm;
 
 ALTER TABLE interactions
 ADD COLUMN thank_you_required boolean DEFAULT FALSE;
