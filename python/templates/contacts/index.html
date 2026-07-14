@@ -16,7 +16,7 @@
 
 <div class="card">
     <div class="table-responsive">
-        <table class="table table-hover mb-0">
+        <table class="table table-hover mb-0" id="contactsTable">
             <thead class="table-light">
                 <tr>
                     <th>Name</th>
@@ -64,4 +64,18 @@
         </table>
     </div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+$(document).ready(function() {
+    $('#contactsTable').DataTable({
+        order: [[1, 'asc']],
+        columnDefs: [
+            { orderable: false, targets: -1 }
+        ],
+        pageLength: 25,
+    });
+});
+</script>
 {% endblock %}

@@ -48,14 +48,21 @@
         <div class="row g-3 mb-4">
             <div class="col-md-6">
                 <label class="form-label">Company</label>
-                <select name="company_id" class="form-select">
-                    <option value="">— No company —</option>
-                    {% for company in companies %}
-                        <option value="{{ company.id }}" {% if request.form.get('company_id') == company.id|string %}selected{% endif %}>
-                            {{ company.name }}
-                        </option>
-                    {% endfor %}
-                </select>
+                <div class="input-group">
+                    <select name="company_id" id="companySelect" class="form-select">
+                        <option value="">— No company —</option>
+                        {% for company in companies %}
+                            <option value="{{ company.id }}" {% if request.form.get('company_id') == company.id|string %}selected{% endif %}>
+                                {{ company.name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                    <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#quickAddCompanyModal"
+                            title="Add a new company">
+                        <i class="bi bi-building-add"></i>
+                    </button>
+                </div>
+                <div class="form-text">Company not in the list? Click <i class="bi bi-building-add"></i> to add it.</div>
             </div>
             <div class="col-md-6">
                 <label class="form-label">How We Met</label>
@@ -94,4 +101,107 @@
 
     </form>
 </div>
+
+<!-- Quick Add Company Modal -->
+<div class="modal fade" id="quickAddCompanyModal" tabindex="-1" aria-labelledby="quickAddCompanyModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="quickAddCompanyModalLabel">
+                    <i class="bi bi-building-add"></i> Quick Add Company
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="quickAddCompanyError" class="alert alert-danger d-none"></div>
+                <div class="row g-3">
+                    <div class="col-12">
+                        <label class="form-label">Company Name <span class="text-danger">*</span></label>
+                        <input type="text" id="qa_company_name" class="form-control" placeholder="Company name">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Industry <span class="text-muted small">(optional)</span></label>
+                        <input type="text" id="qa_company_industry" class="form-control" placeholder="e.g. Technology">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Website <span class="text-muted small">(optional)</span></label>
+                        <input type="url" id="qa_company_website" class="form-control" placeholder="https://...">
+                    </div>
+                </div>
+                <p class="text-muted small mt-3 mb-0">
+                    <i class="bi bi-info-circle"></i>
+                    You can fill in remaining details by editing this company later.
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="quickAddCompanySubmitBtn">
+                    <i class="bi bi-building-add"></i> Add Company
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.getElementById('quickAddCompanySubmitBtn').addEventListener('click', function () {
+    const name      = document.getElementById('qa_company_name').value.trim();
+    const industry  = document.getElementById('qa_company_industry').value.trim();
+    const website   = document.getElementById('qa_company_website').value.trim();
+    const errorBox  = document.getElementById('quickAddCompanyError');
+    const submitBtn = document.getElementById('quickAddCompanySubmitBtn');
+
+    errorBox.classList.add('d-none');
+    errorBox.textContent = '';
+
+    if (!name) {
+        errorBox.textContent = 'Company name is required.';
+        errorBox.classList.remove('d-none');
+        return;
+    }
+
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Adding...';
+
+    const formData = new FormData();
+    formData.append('name', name);
+    if (industry) formData.append('industry', industry);
+    if (website)  formData.append('website', website);
+
+    fetch('{{ url_for("quick_add_company") }}', {
+        method: 'POST',
+        body: formData,
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            const select = document.getElementById('companySelect');
+            const option = new Option(data.name, data.id, true, true);
+            select.add(option);
+
+            bootstrap.Modal.getInstance(document.getElementById('quickAddCompanyModal')).hide();
+            document.getElementById('qa_company_name').value     = '';
+            document.getElementById('qa_company_industry').value = '';
+            document.getElementById('qa_company_website').value  = '';
+        } else {
+            errorBox.textContent = data.error || 'Something went wrong.';
+            errorBox.classList.remove('d-none');
+        }
+    })
+    .catch(() => {
+        errorBox.textContent = 'Network error, please try again.';
+        errorBox.classList.remove('d-none');
+    })
+    .finally(() => {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<i class="bi bi-building-add"></i> Add Company';
+    });
+});
+
+document.getElementById('quickAddCompanyModal').addEventListener('hidden.bs.modal', function () {
+    document.getElementById('quickAddCompanyError').classList.add('d-none');
+});
+</script>
 {% endblock %}

@@ -6,23 +6,22 @@ Run with: uv run flask --app app run
 
 Routes:
     /                       Home — summary counts
-
     /contacts               List all contacts
     /contacts/add           Add a new contact
+    /contacts/quick-add     Quick-add a contact via modal (POST, returns JSON)
     /contacts/<id>/edit     Edit a contact
     /contacts/<id>/delete   Delete a contact
-
     /companies              List all companies
     /companies/add          Add a new company
+    /companies/quick-add    Quick-add a company via modal (POST, returns JSON)
     /companies/<id>/edit    Edit a company
     /companies/<id>/delete  Delete a company
-
     /interactions           List all interactions
     /interactions/add       Add a new interaction
     /interactions/<id>/edit     Edit an interaction
     /interactions/<id>/delete   Delete an interaction
 """
-import os
+
 from flask import Flask, render_template, request, redirect, url_for, flash
 from db import get_db, close_db
 from datetime import date
@@ -267,6 +266,44 @@ def delete_contact(contact_id):
     return redirect(url_for("contacts"))
 
 
+@app.route("/contacts/quick-add", methods=["POST"])
+def quick_add_contact():
+    """
+    Minimal contact creation endpoint used by the modal on the add interaction page.
+    Returns JSON so JavaScript can add the new contact to the dropdown without a page reload.
+    """
+    from flask import jsonify
+
+    first_name = request.form.get("first_name", "").strip()
+    last_name = request.form.get("last_name", "").strip()
+    company_id = request.form.get("company_id") or None
+    how_we_met = request.form.get("how_we_met") or None
+    met_on = request.form.get("met_on") or None
+
+    if not first_name or not last_name:
+        return jsonify({"success": False, "error": "First and last name are required."}), 400
+
+    conn = get_db()
+    cursor = conn.cursor(dictionary=True)
+    try:
+        cursor.execute("""
+            INSERT INTO contacts (first_name, last_name, company_id, how_we_met, met_on)
+            VALUES (%s, %s, %s, %s, %s)
+        """, (first_name, last_name, company_id, how_we_met, met_on))
+        conn.commit()
+        new_id = cursor.lastrowid
+        return jsonify({
+            "success": True,
+            "id": new_id,
+            "name": f"{first_name} {last_name}",
+        })
+    except Exception as e:
+        conn.rollback()
+        return jsonify({"success": False, "error": str(e)}), 500
+    finally:
+        close_db(conn, cursor)
+
+
 # ── Companies ─────────────────────────────────────────────────────────────────
 
 @app.route("/companies")
@@ -368,6 +405,42 @@ def delete_company(company_id):
     return redirect(url_for("companies"))
 
 
+@app.route("/companies/quick-add", methods=["POST"])
+def quick_add_company():
+    """
+    Minimal company creation endpoint used by the modal on contact add/edit pages.
+    Returns JSON so JavaScript can add the new company to the dropdown without a page reload.
+    """
+    from flask import jsonify
+
+    name     = request.form.get("name", "").strip()
+    industry = request.form.get("industry", "").strip() or None
+    website  = request.form.get("website", "").strip() or None
+
+    if not name:
+        return jsonify({"success": False, "error": "Company name is required."}), 400
+
+    conn = get_db()
+    cursor = conn.cursor(dictionary=True)
+    try:
+        cursor.execute("""
+            INSERT INTO companies (name, industry, website)
+            VALUES (%s, %s, %s)
+        """, (name, industry, website))
+        conn.commit()
+        new_id = cursor.lastrowid
+        return jsonify({
+            "success": True,
+            "id": new_id,
+            "name": name,
+        })
+    except Exception as e:
+        conn.rollback()
+        return jsonify({"success": False, "error": str(e)}), 500
+    finally:
+        close_db(conn, cursor)
+
+
 # ── Interactions ──────────────────────────────────────────────────────────────
 
 @app.route("/interactions")
@@ -404,6 +477,8 @@ def add_interaction():
     cursor = conn.cursor(dictionary=True)
     cursor.execute("SELECT id, first_name, last_name FROM contacts ORDER BY last_name, first_name")
     all_contacts = cursor.fetchall()
+    cursor.execute("SELECT id, name FROM companies ORDER BY name")
+    companies = cursor.fetchall()
 
     if request.method == "POST":
         contact_id = request.form.get("contact_id") or None
@@ -433,7 +508,9 @@ def add_interaction():
     return render_template(
         "interactions/add.html",
         all_contacts=all_contacts,
+        companies=companies,
         interaction_type_options=INTERACTION_TYPE_OPTIONS,
+        how_we_met_options=HOW_WE_MET_OPTIONS,
         today=date.today().isoformat(),
     )
 
