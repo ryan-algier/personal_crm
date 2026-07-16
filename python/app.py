@@ -45,22 +45,18 @@ def format_phone(phone):
 
 HOW_WE_MET_OPTIONS = [
     "LinkedIn",
-    "Career Fair",
+    "College",
+    "Life",
     "Referral",
     "Cold Outreach",
-    "Conference",
-    "Networking Event",
-    "University",
-    "Work",
     "Other",
 ]
 
 INTERACTION_TYPE_OPTIONS = [
     "Email",
     "LinkedIn Message",
-    "Phone Call",
+    "Call",
     "Coffee Chat",
-    "Video Call",
     "In Person Meeting",
     "Thank You",
     "Other",
@@ -565,7 +561,7 @@ def edit_interaction(interaction_id):
 
     if request.method == "POST":
         contact_id = request.form.get("contact_id") or None
-        date = request.form.get("date") or None
+        interaction_date = request.form.get("date") or None
         type_ = request.form.get("type") or None
         summary = request.form.get("summary", "").strip() or None
         outcome = request.form.get("outcome", "").strip() or None
@@ -580,7 +576,7 @@ def edit_interaction(interaction_id):
                         contact_id = %s, date = %s, type = %s,
                         summary = %s, outcome = %s, thank_you_required = %s
                     WHERE id = %s
-                """, (contact_id, date, type_, summary, outcome, thank_you_required, interaction_id))
+                """, (contact_id, interaction_date, type_, summary, outcome, thank_you_required, interaction_id))
                 conn.commit()
                 flash("Interaction updated successfully.", "success")
                 close_db(conn, cursor)
