@@ -22,7 +22,7 @@
                     <select name="contact_id" id="contactSelect" class="form-select" required>
                         <option value="">— Select contact —</option>
                         {% for contact in all_contacts %}
-                            <option value="{{ contact.id }}" {% if request.form.get('contact_id') == contact.id|string %}selected{% endif %}>
+                            <option value="{{ contact.id }}" {% if request.form.get('contact_id', prefill_contact_id) == contact.id|string %}selected{% endif %}>
                                 {{ contact.first_name }} {{ contact.last_name }}
                             </option>
                         {% endfor %}
@@ -39,7 +39,7 @@
                 <select name="type" class="form-select">
                     <option value="">— Select type —</option>
                     {% for option in interaction_type_options %}
-                        <option value="{{ option }}" {% if request.form.get('type') == option %}selected{% endif %}>
+                        <option value="{{ option }}" {% if request.form.get('type', prefill_type) == option %}selected{% endif %}>
                             {{ option }}
                         </option>
                     {% endfor %}
@@ -52,7 +52,7 @@
             <div class="col-md-6 d-flex align-items-end">
                 <div class="form-check mb-2">
                     <input class="form-check-input" type="checkbox" name="thank_you_required" id="thank_you_required"
-                           {% if request.form.get('thank_you_required', 'on') == 'on' %}checked{% endif %}>
+                           {% if request.form.get('thank_you_required', 'on' if prefill_type != 'Thank You' else '') == 'on' %}checked{% endif %}>
                     <label class="form-check-label" for="thank_you_required">
                         Thank You Required
                     </label>

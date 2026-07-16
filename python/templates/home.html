@@ -17,7 +17,7 @@
     </div>
 </div>
 
-<div class="row g-4">
+<div class="row g-4 mb-4">
     <div class="col-sm-6 col-lg-3">
         <div class="card p-4 text-center">
             <div class="display-4 fw-bold text-primary">{{ contact_count }}</div>
@@ -43,6 +43,45 @@
         <div class="card p-4 text-center">
             <div class="display-4 fw-bold text-warning">{{ referral_count }}</div>
             <div class="text-muted mt-1"><i class="bi bi-diagram-2"></i> Referrals</div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-header d-flex align-items-center gap-2">
+                {% if thank_you_needed %}
+                    <span class="badge bg-danger">{{ thank_you_needed|length }}</span>
+                {% else %}
+                    <span class="badge bg-success"><i class="bi bi-check-lg"></i></span>
+                {% endif %}
+                <span class="fw-semibold">Thank Yous Required</span>
+            </div>
+            <div class="card-body p-0">
+                {% if thank_you_needed %}
+                    <ul class="list-group list-group-flush">
+                        {% for contact in thank_you_needed %}
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <span>{{ contact.contact_name }}</span>
+                                <div class="d-flex gap-2">
+                                    <a href="{{ url_for('add_interaction', contact_id=contact.id, type='Thank You') }}" class="btn btn-sm btn-outline-primary">
+                                        <i class="bi bi-chat-plus"></i> Log Thank You
+                                    </a>
+                                    <a href="{{ url_for('edit_contact', contact_id=contact.id) }}" class="btn btn-sm btn-outline-secondary">
+                                        <i class="bi bi-person"></i>
+                                    </a>
+                                </div>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <div class="p-4 text-center text-muted">
+                        <i class="bi bi-check-circle text-success" style="font-size: 2rem;"></i>
+                        <div class="mt-2">All thank yous sent!</div>
+                    </div>
+                {% endif %}
+            </div>
         </div>
     </div>
 </div>

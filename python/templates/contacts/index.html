@@ -17,7 +17,7 @@
 <div class="card">
     <div class="table-responsive">
         <table class="table table-hover mb-0" id="contactsTable">
-            <thead class="table-light">
+            <thead class="table-light align-middle">
                 <tr>
                     <th>Name</th>
                     <th>Company</th>
@@ -26,6 +26,8 @@
                     <th>Met On</th>
                     <th>Referred By</th>
                     <th>Email</th>
+                    <th>Phone</th>
+                    <th>Last Edited</th>
                     <th></th>
                 </tr>
             </thead>
@@ -33,16 +35,24 @@
                 {% for contact in contacts %}
                 <tr>
                     <td class="fw-semibold">{{ contact.first_name }} {{ contact.last_name }}</td>
-                    <td>{{ contact.company_name or '—' }}</td>
+                    <td>
+                        {% if contact.company_name and contact.company_id %}
+                            <a href="{{ url_for('edit_company', company_id=contact.company_id) }}" class="text-decoration-none">
+                                {{ contact.company_name }}
+                            </a>
+                        {% else %}—{% endif %}
+                    </td>
                     <td>{{ contact.location or '—' }}</td>
                     <td>{{ contact.how_we_met or '—' }}</td>
-                    <td>{{ contact.met_on.strftime('%b %d, %Y') if contact.met_on else '—' }}</td>
+                    <td data-order="{{ contact.met_on.isoformat() if contact.met_on else '' }}">{{ contact.met_on.strftime('%b %d, %Y') if contact.met_on else '—' }}</td>
                     <td>{{ contact.referred_by or '—' }}</td>
                     <td>
                         {% if contact.email %}
                             <a href="mailto:{{ contact.email }}">{{ contact.email }}</a>
                         {% else %}—{% endif %}
                     </td>
+                    <td>{{ contact.phone|format_phone }}</td>
+                    <td data-order="{{ contact.updated_at.isoformat() if contact.updated_at else '' }}">{{ contact.updated_at.strftime('%b %d, %Y') if contact.updated_at else '—' }}</td>
                     <td class="text-end">
                         <a href="{{ url_for('edit_contact', contact_id=contact.id) }}" class="btn btn-outline-secondary btn-action">
                             <i class="bi bi-pencil"></i>
@@ -57,7 +67,7 @@
                 </tr>
                 {% else %}
                 <tr>
-                    <td colspan="8" class="text-center text-muted py-4">No contacts yet. <a href="{{ url_for('add_contact') }}">Add one</a></td>
+                    <td colspan="10" class="text-center text-muted py-4">No contacts yet. <a href="{{ url_for('add_contact') }}">Add one</a></td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -70,7 +80,7 @@
 <script>
 $(document).ready(function() {
     $('#contactsTable').DataTable({
-        order: [[1, 'asc']],
+        order: [[7, 'desc']],
         columnDefs: [
             { orderable: false, targets: -1 }
         ],
