@@ -25,10 +25,21 @@ Routes:
 from flask import Flask, render_template, request, redirect, url_for, flash
 from db import get_db, close_db
 from datetime import date
+import os
 
 app = Flask(__name__)
 ## to generate a key, use: python -c "import secrets; print(secrets.token_hex(32))"
 app.secret_key = os.getenv("SECRET_KEY")  # required for flash messages
+
+@app.template_filter('format_phone')
+def format_phone(phone):
+    """Format a 10-digit phone number as (###)-###-####."""
+    if not phone:
+        return '—'
+    digits = ''.join(filter(str.isdigit, str(phone)))
+    if len(digits) == 10:
+        return f"({digits[:3]})-{digits[3:6]}-{digits[6:]}"
+    return phone  # return as-is if not 10 digits
 
 # ── Dropdown options ──────────────────────────────────────────────────────────
 
@@ -69,6 +80,23 @@ def home():
     interaction_count = cursor.fetchone()["count"]
     cursor.execute("SELECT COUNT(*) AS count FROM referrals")
     referral_count = cursor.fetchone()["count"]
+    cursor.execute("""
+        SELECT DISTINCT
+            c.id,
+            CONCAT(c.first_name, ' ', c.last_name) AS contact_name
+        FROM interactions i
+        JOIN contacts c ON i.contact_id = c.id
+        WHERE i.thank_you_required = 1
+        AND LOWER(i.type) != 'thank you'
+        AND NOT EXISTS (
+            SELECT 1 FROM interactions ty
+            WHERE ty.contact_id = i.contact_id
+            AND LOWER(ty.type) = 'thank you'
+            AND ty.date > i.date
+        )
+        ORDER BY contact_name
+    """)
+    thank_you_needed = cursor.fetchall()
     close_db(conn, cursor)
     return render_template(
         "home.html",
@@ -76,6 +104,7 @@ def home():
         company_count=company_count,
         interaction_count=interaction_count,
         referral_count=referral_count,
+        thank_you_needed=thank_you_needed,
     )
 
 # ── Contacts ──────────────────────────────────────────────────────────────────
@@ -86,8 +115,8 @@ def contacts():
     cursor = conn.cursor(dictionary=True)
     cursor.execute("""
         SELECT 
-            c.id, c.first_name, c.last_name, c.email, c.location,
-            c.how_we_met, c.met_on,
+            c.id, c.first_name, c.last_name, c.email, c.phone, c.location,
+            c.how_we_met, c.met_on, c.company_id, c.updated_at,
             co.name AS company_name,
             CONCAT(ref.first_name, ' ', ref.last_name) AS referred_by
         FROM contacts c
@@ -448,20 +477,20 @@ def interactions():
     conn = get_db()
     cursor = conn.cursor(dictionary=True)
     cursor.execute("""
-        SELECT 
-            i.id, i.date, i.type, i.summary, i.outcome, i.thank_you_required,
-            CONCAT(c.first_name, ' ', c.last_name) AS contact_name,
-            CASE 
-                WHEN i.thank_you_required = 0 THEN 'not_required'
-                WHEN i.type = 'Thank You' THEN 'is_thank_you'
-                WHEN EXISTS (
-                    SELECT 1 FROM interactions ty
-                    WHERE ty.contact_id = i.contact_id
-                    AND LOWER(ty.type) = 'thank you'
-                    AND ty.date > i.date
-                ) THEN 'sent'
-                ELSE 'missing'
-            END AS thank_you_status
+        SELECT i.id, i.date, i.type, i.summary, i.outcome, i.thank_you_required,
+               i.contact_id,
+               CONCAT(c.first_name, ' ', c.last_name) AS contact_name,
+               CASE
+                   WHEN i.thank_you_required = 0 THEN 'not_required'
+                   WHEN i.type = 'Thank You' THEN 'is_thank_you'
+                   WHEN EXISTS (
+                       SELECT 1 FROM interactions ty
+                       WHERE ty.contact_id = i.contact_id
+                       AND LOWER(ty.type) = 'thank you'
+                       AND ty.date > i.date
+                   ) THEN 'sent'
+                   ELSE 'missing'
+               END AS thank_you_status
         FROM interactions i
         JOIN contacts c ON i.contact_id = c.id
         ORDER BY i.date DESC
@@ -479,6 +508,10 @@ def add_interaction():
     all_contacts = cursor.fetchall()
     cursor.execute("SELECT id, name FROM companies ORDER BY name")
     companies = cursor.fetchall()
+
+    # Pre-fill values from query parameters (e.g. from home page thank you button)
+    prefill_contact_id = request.args.get("contact_id", "")
+    prefill_type = request.args.get("type", "")
 
     if request.method == "POST":
         contact_id = request.form.get("contact_id") or None
@@ -512,6 +545,8 @@ def add_interaction():
         interaction_type_options=INTERACTION_TYPE_OPTIONS,
         how_we_met_options=HOW_WE_MET_OPTIONS,
         today=date.today().isoformat(),
+        prefill_contact_id=prefill_contact_id,
+        prefill_type=prefill_type,
     )
 
 
@@ -530,7 +565,7 @@ def edit_interaction(interaction_id):
 
     if request.method == "POST":
         contact_id = request.form.get("contact_id") or None
-        interaction_date = request.form.get("date") or None
+        date = request.form.get("date") or None
         type_ = request.form.get("type") or None
         summary = request.form.get("summary", "").strip() or None
         outcome = request.form.get("outcome", "").strip() or None
@@ -545,7 +580,7 @@ def edit_interaction(interaction_id):
                         contact_id = %s, date = %s, type = %s,
                         summary = %s, outcome = %s, thank_you_required = %s
                     WHERE id = %s
-                """, (contact_id, interaction_date, type_, summary, outcome, thank_you_required, interaction_id))
+                """, (contact_id, date, type_, summary, outcome, thank_you_required, interaction_id))
                 conn.commit()
                 flash("Interaction updated successfully.", "success")
                 close_db(conn, cursor)
