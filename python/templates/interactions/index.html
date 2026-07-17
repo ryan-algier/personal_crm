@@ -15,36 +15,74 @@
 </div>
 
 <div class="card">
-    <div class="table-responsive">
+    <div style="overflow-x: auto;">
         <table class="table table-hover mb-0" id="interactionsTable">
-            <thead class="table-light">
+            <thead class="table-light align-middle">
                 <tr>
                     <th>Date</th>
                     <th>Contact</th>
                     <th>Type</th>
-                    <th>Summary</th>
-                    <th>Outcome</th>
-                    <th>Thank You Required</th>
-                    <th>Thank You Sent</th>
+                    <th>Summary / Outcome</th>
+                    <th>Thank You<br>Required</th>
+                    <th>Thank You<br>Status</th>
                     <th></th>
                 </tr>
             </thead>
             <tbody>
                 {% for interaction in interactions %}
                 <tr>
-                    <td>{{ interaction.date.strftime('%b %d, %Y') if interaction.date else '—' }}</td>
-                    <td class="fw-semibold">{{ interaction.contact_name }}</td>
-                    <td><span class="badge bg-secondary">{{ interaction.type or '—' }}</span></td>
-                    <td class="text-muted small">{{ interaction.summary or '—' }}</td>
-                    <td class="text-muted small">{{ interaction.outcome or '—' }}</td>
-                    <td>
+                    <td class="align-middle"
+                        data-order="{{ interaction.date.isoformat() if interaction.date else '' }}">
+                        {{ interaction.date.strftime('%b %d, %Y') if interaction.date else '—' }}
+                    </td>
+                    <td class="fw-semibold align-middle">
+                        <a href="{{ url_for('edit_contact', contact_id=interaction.contact_id) }}" class="text-decoration-none">
+                            {{ interaction.contact_name }}
+                        </a>
+                    </td>
+                    <td class="align-middle">
+                        <span class="badge bg-secondary">{{ interaction.type or '—' }}</span>
+                    </td>
+                    <td class="align-middle" style="min-width: 300px; font-size:1.04rem">
+                        {% if interaction.summary or interaction.outcome %}
+                            {# Preview — first 80 chars of summary #}
+                            <span class="text-muted" id="preview-{{ interaction.id }}">
+                                {% set preview = (interaction.summary or interaction.outcome or '') %}
+                                {{ preview[:80] }}{% if preview|length > 80 %}…{% endif %}
+                                {% if (interaction.summary and interaction.summary|length > 80) or interaction.outcome %}
+                                <a href="#" class="ms-1 text-decoration-none small" style="font-size: 0.72rem;"
+                                   onclick="showMore('{{ interaction.id }}'); return false;">
+                                   Show More ▼
+                                </a>
+                                {% endif %}
+                            </span>
+                            {# Full content — hidden by default #}
+                            <div id="full-{{ interaction.id }}" style="display:none;">
+                                {% if interaction.summary %}
+                                    <div class="text-muted text-uppercase fw-bold mb-1 text-decoration-underline" style="font-size:0.7rem;">Summary:</div>
+                                    <div class="mb-2">{{ interaction.summary }}</div>
+                                {% endif %}
+                                {% if interaction.outcome %}
+                                    <div class="text-muted text-uppercase fw-bold mb-1 text-decoration-underline" style="font-size:0.7rem;">Outcome:</div>
+                                    <div>{{ interaction.outcome }}</div>
+                                {% endif %}
+                                <a href="#" class="text-decoration-none small" style="font-size: 0.72rem;"
+                                   onclick="showLess('{{ interaction.id }}'); return false;">
+                                   Show Less ▲
+                                </a>
+                            </div>
+                        {% else %}
+                            <span class="text-muted">—</span>
+                        {% endif %}
+                    </td>
+                    <td class="align-middle">
                         {% if interaction.thank_you_required %}
                             <span class="badge bg-warning text-dark">Yes</span>
                         {% else %}
                             <span class="badge bg-light text-muted">No</span>
                         {% endif %}
                     </td>
-                    <td>
+                    <td class="align-middle">
                         {% if interaction.thank_you_status == 'not_required' %}
                             <span class="badge bg-light text-muted">N/A</span>
                         {% elif interaction.thank_you_status == 'is_thank_you' %}
@@ -54,8 +92,8 @@
                         {% elif interaction.thank_you_status == 'missing' %}
                             <span class="badge bg-danger">Missing</span>
                         {% endif %}
-                    </td>                    
-                    <td class="text-end">
+                    </td>
+                    <td class="text-end align-middle">
                         <a href="{{ url_for('edit_interaction', interaction_id=interaction.id) }}" class="btn btn-outline-secondary btn-action">
                             <i class="bi bi-pencil"></i>
                         </a>
@@ -69,7 +107,9 @@
                 </tr>
                 {% else %}
                 <tr>
-                    <td colspan="7" class="text-center text-muted py-4">No interactions yet. <a href="{{ url_for('add_interaction') }}">Log one</a></td>
+                    <td colspan="7" class="text-center text-muted py-4">
+                        No interactions yet. <a href="{{ url_for('add_interaction') }}">Log one</a>
+                    </td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -80,13 +120,26 @@
 
 {% block scripts %}
 <script>
+function showMore(id) {
+    document.getElementById('preview-' + id).style.display = 'none';
+    document.getElementById('full-'    + id).style.display = 'block';
+}
+
+function showLess(id) {
+    document.getElementById('preview-' + id).style.display = 'inline';
+    document.getElementById('full-'    + id).style.display = 'none';
+}
+
 $(document).ready(function() {
     $('#interactionsTable').DataTable({
         order: [[0, 'desc']],
         columnDefs: [
-            { orderable: false, targets: -1 }
+            { orderable: false, targets: [3, 6] },
         ],
         pageLength: 25,
+        dom: "<'row'<'col-sm-6'l><'col-sm-6'f>>" +
+             "<'row'<'col-sm-12'tr>>" +
+             "<'row'<'col-sm-5'i><'col-sm-7'p>>",
     });
 });
 </script>
