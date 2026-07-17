@@ -20,16 +20,16 @@ Routes:
     /interactions/add       Add a new interaction
     /interactions/<id>/edit     Edit an interaction
     /interactions/<id>/delete   Delete an interaction
+    /referrals              List all referrals
+    /referrals/<id>/delete  Delete a referral
 """
 
 from flask import Flask, render_template, request, redirect, url_for, flash
 from db import get_db, close_db
 from datetime import date
-import os
 
 app = Flask(__name__)
-## to generate a key, use: python -c "import secrets; print(secrets.token_hex(32))"
-app.secret_key = os.getenv("SECRET_KEY")  # required for flash messages
+app.secret_key = "crm-dev-secret-key"  # required for flash messages
 
 @app.template_filter('format_phone')
 def format_phone(phone):
@@ -608,6 +608,46 @@ def delete_interaction(interaction_id):
     finally:
         close_db(conn, cursor)
     return redirect(url_for("interactions"))
+
+
+# ── Referrals ─────────────────────────────────────────────────────────────────
+
+@app.route("/referrals")
+def referrals():
+    conn = get_db()
+    cursor = conn.cursor(dictionary=True)
+    cursor.execute("""
+        SELECT
+            r.id,
+            r.created_at,
+            CONCAT(ref.first_name, ' ', ref.last_name) AS referrer_name,
+            ref.id AS referrer_id,
+            CONCAT(rec.first_name, ' ', rec.last_name) AS referred_name,
+            rec.id AS referred_id
+        FROM referrals r
+        JOIN contacts ref ON r.referrer_id = ref.id
+        JOIN contacts rec ON r.referred_id = rec.id
+        ORDER BY r.created_at DESC
+    """)
+    referrals = cursor.fetchall()
+    close_db(conn, cursor)
+    return render_template("referrals/index.html", referrals=referrals)
+
+
+@app.route("/referrals/<int:referral_id>/delete", methods=["POST"])
+def delete_referral(referral_id):
+    conn = get_db()
+    cursor = conn.cursor()
+    try:
+        cursor.execute("DELETE FROM referrals WHERE id = %s", (referral_id,))
+        conn.commit()
+        flash("Referral deleted.", "success")
+    except Exception as e:
+        conn.rollback()
+        flash(f"Error deleting referral: {e}", "danger")
+    finally:
+        close_db(conn, cursor)
+    return redirect(url_for("referrals"))
 
 
 # ── Run ───────────────────────────────────────────────────────────────────────

@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% block title %}Referrals — Networking CRM{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col">
+        <h2 class="fw-bold">Referrals</h2>
+        <p class="text-muted">{{ referrals|length }} total</p>
+    </div>
+</div>
+
+<div class="card">
+    <table class="table table-hover mb-0" id="referralsTable">
+        <thead class="table-light align-middle">
+            <tr>
+                <th>Referrer</th>
+                <th>Referred</th>
+                <th>Date Added</th>
+                <th class="text-end">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for referral in referrals %}
+            <tr>
+                <td class="fw-semibold align-middle">
+                    <a href="{{ url_for('edit_contact', contact_id=referral.referrer_id) }}" class="text-decoration-none">
+                        {{ referral.referrer_name }}
+                    </a>
+                </td>
+                <td class="fw-semibold align-middle">
+                    <a href="{{ url_for('edit_contact', contact_id=referral.referred_id) }}" class="text-decoration-none">
+                        {{ referral.referred_name }}
+                    </a>
+                </td>
+                <td class="align-middle"
+                    data-order="{{ referral.created_at.isoformat() if referral.created_at else '' }}">
+                    {{ referral.created_at.strftime('%b %d, %Y') if referral.created_at else '—' }}
+                </td>
+                <td class="text-end align-middle">
+                    <form method="POST" action="{{ url_for('delete_referral', referral_id=referral.id) }}" class="d-inline"
+                          onsubmit="return confirm('Delete this referral? This will not delete the contacts themselves.')">
+                        <button type="submit" class="btn btn-outline-danger btn-action">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </form>
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="4" class="text-center text-muted py-4">
+                    No referrals yet. Add them when creating or editing a contact.
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+$(document).ready(function() {
+    $('#referralsTable').DataTable({
+        order: [[2, 'desc']],
+        columnDefs: [
+            { orderable: false, targets: -1 }
+        ],
+        pageLength: 25,
+        dom: "<'row'<'col-sm-6'l><'col-sm-6'f>>" +
+             "<'row'<'col-sm-12'tr>>" +
+             "<'row'<'col-sm-5'i><'col-sm-7'p>>",
+    });
+});
+</script>
+{% endblock %}
