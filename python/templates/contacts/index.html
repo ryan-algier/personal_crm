@@ -34,26 +34,26 @@
             <tbody>
                 {% for contact in contacts %}
                 <tr>
-                    <td class="fw-semibold">{{ contact.first_name }} {{ contact.last_name }}</td>
-                    <td>
+                    <td class="fw-semibold align-middle">{{ contact.first_name }} {{ contact.last_name }}</td>
+                    <td class="align-middle">
                         {% if contact.company_name and contact.company_id %}
                             <a href="{{ url_for('edit_company', company_id=contact.company_id) }}" class="text-decoration-none">
                                 {{ contact.company_name }}
                             </a>
                         {% else %}—{% endif %}
                     </td>
-                    <td>{{ contact.location or '—' }}</td>
-                    <td>{{ contact.how_we_met or '—' }}</td>
-                    <td data-order="{{ contact.met_on.isoformat() if contact.met_on else '' }}">{{ contact.met_on.strftime('%b %d, %Y') if contact.met_on else '—' }}</td>
-                    <td>{{ contact.referred_by or '—' }}</td>
-                    <td>
+                    <td class="align-middle">{{ contact.location or '—' }}</td>
+                    <td class="align-middle">{{ contact.how_we_met or '—' }}</td>
+                    <td class="align-middle" data-order="{{ contact.met_on.isoformat() if contact.met_on else '' }}">{{ contact.met_on.strftime('%b %d, %Y') if contact.met_on else '—' }}</td>
+                    <td class="align-middle">{{ contact.referred_by or '—' }}</td>
+                    <td class="align-middle">
                         {% if contact.email %}
                             <a href="mailto:{{ contact.email }}">{{ contact.email }}</a>
                         {% else %}—{% endif %}
                     </td>
-                    <td>{{ contact.phone|format_phone }}</td>
-                    <td data-order="{{ contact.updated_at.isoformat() if contact.updated_at else '' }}">{{ contact.updated_at.strftime('%b %d, %Y') if contact.updated_at else '—' }}</td>
-                    <td class="text-end">
+                    <td class="align-middle">{{ contact.phone|format_phone }}</td>
+                    <td class="align-middle" data-order="{{ contact.updated_at.isoformat() if contact.updated_at else '' }}">{{ contact.updated_at.strftime('%b %d, %Y') if contact.updated_at else '—' }}</td>
+                    <td class="align-middlen text-end">
                         <a href="{{ url_for('edit_contact', contact_id=contact.id) }}" class="btn btn-outline-secondary btn-action">
                             <i class="bi bi-pencil"></i>
                         </a>
@@ -85,6 +85,9 @@ $(document).ready(function() {
             { orderable: false, targets: -1 }
         ],
         pageLength: 25,
+        dom: "<'row'<'col-sm-6'l><'col-sm-6'f>>" +
+             "<'row'<'col-sm-12'tr>>" +
+             "<'row'<'col-sm-5'i><'col-sm-7'p>>",
     });
 });
 </script>
