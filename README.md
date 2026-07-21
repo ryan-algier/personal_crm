@@ -362,6 +362,11 @@ mysql -u root -p personal_crm < backups/personal_crm_2024_01_15_09_00.sql
 
 ---
 
+### Step 9 - Run Script as a shortcut OPTIONAL:
+I wanted to have a desktop shortcut icon to automatically run the app without having to open vs code so I added run_crm.bat. To make it a icon shortcut: right-click, show more options, 
+send to - Desktop (create shortcut)
+
+---
 
 ## Day-to-Day Usage
 
@@ -410,8 +415,6 @@ I expect this project to expand as I use it and need new things. There are alrea
 in between page for adding a new contact when their company doesn't yet exist. Wnat to be able to enter the info for a person and enter the company later or in that moment with another form or something
 Same for interaction with a person who is not a contact yet
 
-THrows an error: http://127.0.0.1:5000/interactions/add  when trying to log an interactioon
-
 referals page?
 
-each of the tables should be able to be sorted and have a search bar
+screen shots will need to reflect all of these changes
