@@ -52,19 +52,21 @@ With my data science background, the rise of AI capabilities and an idea in my h
 ```
 networking-crm/
 │
-├── README.md                ← you are here
-├── .gitignore                 ← things not to put on github
-├── .env.example               ← template for required environment variables
-├── pyproject.toml             ← uv project config
-├── uv.lock                    ← uv lockfile
-├── Dockerfile                 ← builds the Flask app image
-├── docker-compose.yml         ← orchestrates the Flask app + MySQL containers
-├── run_crm.bat                ← Windows shortcut to launch via Docker
+├── README.md                 ← you are here
+├── .gitignore                ← things not to put on github
+├── .env.example              ← template for required environment variables
+├── pyproject.toml            ← uv project config
+├── uv.lock                   ← uv lockfile
+├── Dockerfile                ← builds the Flask app image
+├── docker-compose.yml        ← orchestrates the Flask app + MySQL containers
+├── run_crm.bat               ← Windows shortcut to launch via Docker
 │
 ├── sql/
-│   ├── 001_create_tables.sql          ← initial schema
-│   ├── 002_add_thank_you_required.sql ← modified schema
-│   └── 003_add_updated_at.sql         ← modified schema
+│   ├── 000_create_sample_db.sql       ← creates personal_crm_sample database
+│   ├── 001_create_tables.sql          ← initial schema (personal_crm)
+│   ├── 002_add_thank_you_required.sql ← modified schema (personal_crm)
+│   ├── 003_add_updated_at.sql         ← adds updated_at column (personal_crm)
+│   └── 004_sample_data.sql            ← schema + anonymized sample data (personal_crm_sample), auto-loaded on first container start
 │
 ├── python/
 │   ├── app.py                ← Flask application
@@ -79,7 +81,7 @@ networking-crm/
 │       ├── companies/
 │       └── interactions/
 │
-├── (not on git) real_data/
+├── excel/
 │   └── crm_template.xlsx     ← data entry template
 │
 ├── anonymized_data/
@@ -90,7 +92,21 @@ networking-crm/
 │
 └── docs/
     ├── changelog.md          ← full decision log and project context
-    └── screenshots/         *NOT ADDED YET*
+    └── screenshots/
+        ├── powerbi/
+        │   ├── 1_interactions.png
+        │   ├── 2_interactions_one_selected.png
+        │   ├── 3_KeyCompanies.png
+        │   ├── 4_Location.png
+        │   ├── 5_MeetingAndInteractions.png
+        │   ├── 6_ThankYous.png
+        │   └── 7_TopContacts.png
+        └── webapp/
+            ├── 1_home.png
+            ├── 2_contacts.png
+            ├── 3_add_contact.png
+            ├── 4_interactions.png
+            └── 5_company_search.png
 ```
 
 ---
@@ -121,6 +137,8 @@ Real data lives only in a local MySQL instance (now a local Docker volume) and i
 
 `anonymized_data/crm_anonymized_data.xlsx` includes my data after anonymization. It can be used to see the full functionality of the repo without having to create your own excel data first if you'd like.
 
+This same anonymized data is also baked into `sql/004_sample_data.sql`, so the `personal_crm_sample` database auto-populates the first time the Docker containers start - no Python, Excel, or import step required to see the app working with real-looking data.
+
 ---
 
 ## Power BI Dashboard
@@ -128,6 +146,7 @@ Real data lives only in a local MySQL instance (now a local Docker volume) and i
 The dashboard (`powerbi/crm_dashboard.pbix`) is pre-loaded with anonymized sample data and can be opened in Power BI Desktop without any setup (no MySQL connection required to view it).
 
 **Interactions** KPI cards (total contacts, total interactions, days since last interaction), per-person interaction table sorted by last contact date, interactions per person bar chart, interactions over time line chart. Includes color coded status for how long its been since interacting (green = 0-90 days, yellow = 90-180 days, red = 180 days+, grey = N/A) 
+
 **Thank Yous** Table to show interactions that required a thank you, whether one was sent and how long it took to send with color coded statuses. Also a KPI for average days to turn around a thank you (Don't worry, I am much faster with real interactions)
 
 **Location/Industry** Map with bubbles by city for how many companies are listed in that city. Bottom bar graph shows counts of companies by industry and allows filtering on the map to see the distribution of a particular industry by city.
@@ -144,15 +163,25 @@ The dashboard (`powerbi/crm_dashboard.pbix`) is pre-loaded with anonymized sampl
 
 ## Screenshots
 
-Screenshots use anonymized sample data - no real personal information is shown.
+> Screenshots use anonymized sample data - no real personal information is shown.
 
 ### Power BI Dashboard
 
-*Screenshots coming soon - add `docs/screenshots/dashboard_page1.png`, `dashboard_page2.png`, `dashboard_page3.png`*
+![Interactions](docs/screenshots/powerbi/1_interactions.png)
+![Interactions - Person Selected](docs/screenshots/powerbi/2_interactions_one_selected.png)
+![Key Companies](docs/screenshots/powerbi/3_KeyCompanies.png)
+![Location](docs/screenshots/powerbi/4_Location.png)
+![Meetings and Interactions](docs/screenshots/powerbi/5_MeetingAndInteractions.png)
+![Thank Yous](docs/screenshots/powerbi/6_ThankYous.png)
+![Top Contacts](docs/screenshots/powerbi/7_TopContacts.png)
 
 ### Flask Web App
 
-*Screenshots coming soon - add `docs/screenshots/flask_home.png`, `flask_contacts.png`, `flask_add_contact.png`, `flask_interactions.png`*
+![Home](docs/screenshots/webapp/1_home.png)
+![Contacts](docs/screenshots/webapp/2_contacts.png)
+![Add Contact](docs/screenshots/webapp/3_add_contact.png)
+![Interactions](docs/screenshots/webapp/4_interactions.png)
+![Company Search](docs/screenshots/webapp/5_company_search.png)
 
 ---
 
@@ -204,7 +233,7 @@ with the following extensions:
 - [Ruff] - linter to clean up code
 - [Rainbow CSV] - makes csv viewing easier
 
-**Only needed if you want to run things natively instead of via Docker** (e.g. running `import_to_mysql.py`/`anonymize_data.py`/`backup_db.py` directly, or developing without rebuilding containers each time):
+**Only needed if you want to create/import your own data via Excel, regenerate sample data, or run things natively instead of via Docker** (viewing the pre-loaded sample data requires none of this - see Step 4):
 - [MySQL Community Server](https://dev.mysql.com/downloads/mysql/) and [MySQL Workbench](https://dev.mysql.com/downloads/workbench/)
 - [Python 3.11+](https://www.python.org/downloads/)
 - [uv](https://docs.astral.sh/uv/getting-started/installation/)
@@ -251,10 +280,12 @@ docker compose up --build
 This will:
 1. Pull the official MySQL 8.0 image
 2. Build the Flask app image from the `Dockerfile`
-3. Automatically run the SQL migration files in `sql/` against a fresh database on first startup - no manual Workbench steps needed
+3. Automatically run every SQL file in `sql/` (in order) against a fresh database volume on first startup - no manual Workbench steps needed. This creates the empty `personal_crm` database/schema **and** a fully pre-populated `personal_crm_sample` database with anonymized sample data already loaded
 4. Start both containers, with Flask waiting until MySQL is ready
 
-Once it settles, open `http://localhost:5000` - your (currently empty) app is running.
+Once it settles, open `http://localhost:5000`. By default (`DB_MODE=real` in `.env`) you'll see an empty app ready for your own data. Set `DB_MODE=sample` in `.env` and restart if you want to see it pre-loaded with sample data immediately - no import step needed.
+
+Note: this auto-load only happens on a **fresh** database volume. If you've already run the containers before, the init scripts won't rerun automatically - see the Backups section for how to reload data into an existing container.
 
 On future runs, you can drop `--build` unless you've changed code or dependencies:
 ```
@@ -285,14 +316,13 @@ The import script truncates and reloads all data on every run. Any data entered 
 
 **Option C - Using data I made up**
 
-If you just want to see what I made and not make your own data, I have provided data for you to do so. Look for `anonymized_data/crm_anonymized_data.xlsx`. Copy that file and add it to the excel folder as such: `excel/crm_real_data.xlsx`
-
-Import with:
+If you just want to see what I made and not make your own data, you don't need to do anything extra - `personal_crm_sample` is automatically pre-loaded with my anonymized sample data the first time the Docker containers start (see Step 3). Just set `DB_MODE=sample` in `.env` and restart:
 
 ```
-cd python
-uv run import_to_mysql.py
+docker compose up
 ```
+
+If you'd rather work with the raw Excel version of that same data (e.g. to re-import it yourself or inspect it), it's still available at `anonymized_data/crm_anonymized_data.xlsx` - copy it to `excel/crm_real_data.xlsx` and run `import_to_mysql.py` natively as before if needed.
 
 ---
 
@@ -421,14 +451,4 @@ I expect this project to expand as I use it and need new things. There are alrea
 - if I wasn't making this partially as a portfolio project, I would remove all the excel and anonymization steps. It was a lot of work that isn't needed if this information is just meant to live locally on a personal computer
 - more powerBi charts. I scratched the surface with database connection, charts and minor DAX. There is so much more I can do and would like to practice with
 - along with more powerbi charts, I could clean up the flow of the dashboard and maybe naming schemes. I was using this project to learn how to make a dashboard so I was adding and modifying things all the time. I could likely do better once I get a better sense of what sheets I actually care about and use frequently
-- more data and better ways to go through the summaries of the interactions. Still haven't nailed where large amounts of text should go in the database and correspondingly how to show them in the UI
-- containerize the Excel import/anonymize scripts so a native Python install isn't needed at all
-
-## TO DO:
-
-in between page for adding a new contact when their company doesn't yet exist. Want to be able to enter the info for a person and enter the company later or in that moment with another form or something
-Same for interaction with a person who is not a contact yet
-
-referrals page?
-
-screenshots will need to reflect all of these changes (including the Docker-based setup flow)
+- containerize the Excel import/anonymize scripts too, so regenerating sample data from scratch also doesn't require a native Python install (viewing pre-loaded sample data already works Docker-only as of now)
