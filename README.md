@@ -450,6 +450,7 @@ Built iteratively over multiple sessions as both a personal tool and a learning 
 
 I expect this project to expand as I use it and need new things. There are already many things I would do differently if I started again or want to add like:
 
+- automated tests to check that behaviors of manipulating the database from the web interface is working as inteneded, there are no duplicates, etc
 - integrated charts into the web interface
 - web hosting and adding logins if this turned into an actual living web service
 - if I wasn't making this partially as a portfolio project, I would remove all the excel and anonymization steps. It was a lot of work that isn't needed if this information is just meant to live locally on a personal computer
