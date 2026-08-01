@@ -27,9 +27,10 @@ Routes:
 from flask import Flask, render_template, request, redirect, url_for, flash
 from db import get_db, close_db
 from datetime import date
+import os
 
 app = Flask(__name__)
-app.secret_key = "crm-dev-secret-key"  # required for flash messages
+app.secret_key = os.getenv("SECRET_KEY") # required for flash messages
 
 @app.template_filter('format_phone')
 def format_phone(phone):
