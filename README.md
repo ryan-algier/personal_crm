@@ -19,6 +19,10 @@ With my data science background, the rise of AI capabilities and an idea in my h
 * An opportunity to use AI to augment my data science abilities and see what the hype is all about in a realistic project situation
 * Something to show in a portfolio that highlights my abilities in data science, project planning, learning new skills and real world thinking
 
+## Quick Peek:
+![Home](docs/screenshots/webapp/1_home.png)
+![Contacts](docs/screenshots/webapp/2_contacts.png)
+
 ---
 
 ## What It Does
