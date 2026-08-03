@@ -35,7 +35,6 @@ import mysql.connector
 from openpyxl import load_workbook
 from datetime import datetime, date
 from dotenv import load_dotenv
-import sys
 
 # ── Paths ────────────────────────────────────────────────────────────────────
 
