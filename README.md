@@ -95,7 +95,7 @@ networking-crm/
 │   └── crm_dashboard.pbix    ← Power BI dashboard (anonymized data)
 │
 └── docs/
-    ├── changelog.md          ← full decision log and project context
+    ├── schema_diagram.png
     └── screenshots/
         ├── powerbi/
         │   ├── 1_interactions.png
@@ -442,9 +442,29 @@ docker compose down
 
 ---
 
+## Notable Decisions
+
+A few choices along the way that involved real tradeoffs, in case they're useful context (or just interesting):
+
+**Why MySQL + Excel + Power BI + Flask, instead of picking one tool and sticking with it.** Each piece does the job it's actually good at: MySQL as the source of truth, Excel for fast bulk entry, Power BI for analysis, Flask for day-to-day single-record CRUD. It's also a deliberately recognizable pattern for data analyst/business analyst-adjacent roles.
+
+**Why the schema kept shrinking, not growing.** Early versions of `companies` and `contacts` had more fields like `size`/`status` on companies, `outreach_status`/`last_contact`/`follow_up_date`/`tags` on contacts. All got removed after actually using the tool for a while and finding they were either redundant with data already derivable from `interactions`, or fields I set once and never updated again. Easier to add a column back later than to carry dead weight in every form and query.
+
+**Why the import script truncates and reloads instead of merging.** At this data scale (tens of contacts, not thousands), a full truncate-and-reload on every import is simpler and less error-prone than writing real upsert/merge logic; but it comes with a real sharp edge: anything entered via the Flask app gets wiped if someone runs an Excel import afterward. Living with that tradeoff rather than over-engineering a merge step for a personal-scale dataset. Worth revisiting only if data volume or number of contributors actually grows.
+
+**Why Power BI stays separate from Flask instead of embedding it.** I looked at embedding the dashboard directly in the web app via Power BI Embedded but it requires a Pro/Premium license and Azure AD setup, which is real infrastructure for a personal tool. Publishing to Power BI Service for a shareable link is free, but makes the dashboard publicly reachable, which conflicts with keeping real data private. Decided the juice wasn't worth the squeeze: Power BI Desktop stays a separate app you open alongside Flask, not embedded. I also just wanted to learn Power BI for projects at work within the Power BI app itself.
+
+**Why Docker over sticking with the native setup.** The native path required MySQL Server, MySQL Workbench, Connector/NET, and a Python/uv environment. This was five separate installs, manual PATH edits, and running SQL migration files by hand in Workbench (twice, once per database). Docker Compose collapses all of that into `git clone && docker compose up` — no MySQL or Python install needed just to run the app. The real motivating case: it's the difference between someone actually running the project versus just reading the README and moving on.
+
+**A real bug worth mentioning, because the fix says something about mysqldump.** While setting up the sample database to auto-populate on first container start, I tried adding a new column directly into the dumped `CREATE TABLE` statement without also updating the `INSERT` statements below it. `mysqldump` output pairs a fixed table shape with fixed-position values, so this broke every row insert with a column-count mismatch. The fix wasn't editing the dump file by hand; it was applying the schema change to the live database first via `ALTER TABLE`, then re-generating the dump from that corrected state. Small thing, but a good reminder that generated files are downstream artifacts, not something to hand-edit.
+
+**Why Excel uses temporary self-assigned IDs instead of just typing in real MySQL IDs.** Manually tracking auto-incremented database IDs while entering data in Excel is fragile and error-prone. Instead, Excel uses simple temporary integers to link rows together (e.g. a contact's `company_id` points at a temp ID typed into the Companies sheet), and the import script maps those to MySQL's real auto-incremented IDs at import time. Data entry stays simple and the ID bookkeeping is handled in one place, not by hand every time.
+
+---
+
 ## Acknowledgements
 
-Built iteratively over multiple sessions as both a personal tool and a learning project. The schema, anonymization pipeline, Flask app, Power BI dashboard, and Docker setup each evolved based on real usage. The `docs/changelog.md` file documents every decision made along the way, including why certain fields were added or removed, tradeoffs considered, and lessons learned. It also reflects my interactions with AI and how I used it to augment my ideas. There are many parts that may not 100% reflect what happened as I would frequently take what AI recommended and change aspects of it and not tell it everything.
+Built iteratively over multiple sessions as both a personal tool and a learning project. The schema, anonymization pipeline, Flask app, Power BI dashboard, and Docker setup each evolved based on real usage (see Notable Decisions above for some of the reasoning behind specific choices and tradeoffs along the way). Built with the help of AI as a collaborator throughout; I'd take what it recommended and frequently adjust or override it based on what actually worked in practice.
 
 ## In the Future:
 
