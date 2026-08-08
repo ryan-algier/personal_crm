@@ -55,10 +55,9 @@ HOW_WE_MET_OPTIONS = [
 
 INTERACTION_TYPE_OPTIONS = [
     "Email",
-    "LinkedIn Message",
+    "LinkedIn",
     "Call",
-    "Coffee Chat",
-    "In Person Meeting",
+    "In Person",
     "Thank You",
     "Other",
 ]
